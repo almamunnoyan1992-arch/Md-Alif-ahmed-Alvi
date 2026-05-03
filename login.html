@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MD Abdullah AL Alif</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>MD Abdullah AL Alif</h1>
+                <p>Admin Login</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="almamunfire10@gmail.com" 
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Enter your password" 
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        Remember me on this device
+                    </label>
+                </div>
+                <button type="submit" class="login-btn">Login to Dashboard</button>
+            </form>
+            <div class="login-footer">
+                <p>Use any email and password "12345678"</p>
+                <a href="index.html" class="back-link">← Back to Portfolio</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple authentication (for demo purposes)
+            if (password === '12345678') {
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('isLoggedIn', 'true');
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Invalid password! Use "12345678" for your profile');
+            }
+        });
+
+        // Auto-fill if remembered
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('rememberMe') === 'true') {
+                const email = localStorage.getItem('userEmail');
+                if (email) {
+                    document.getElementById('email').value = email;
+                    document.getElementById('rememberMe').checked = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

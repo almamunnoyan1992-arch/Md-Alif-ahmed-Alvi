@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MD Abdullah AL Alif</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-page">
+    <!-- Dashboard Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container">
+            <div class="dashboard-logo">Admin Panel</div>
+            <div class="dashboard-user">
+                <span id="userEmail">User</span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <ul class="dashboard-menu">
+                <li><a href="#profile" class="menu-link active" data-section="profile"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="#media" class="menu-link" data-section="media"><i class="fas fa-images"></i> Media Gallery</a></li>
+                <li><a href="#contact-info" class="menu-link" data-section="contact"><i class="fas fa-phone"></i> Contact Info</a></li>
+                <li><a href="#bio" class="menu-link" data-section="bio"><i class="fas fa-file-alt"></i> Bio & Skills</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Profile Section -->
+            <section id="profile" class="dashboard-section active">
+                <h2>Profile Settings</h2>
+                <div class="profile-section">
+                    <div class="profile-picture-box">
+                        <div id="profilePreview" class="profile-picture">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input type="file" id="profilePicInput" accept="image/*" style="display:none;">
+                        <button class="btn-secondary" onclick="document.getElementById('profilePicInput').click()">
+                            <i class="fas fa-upload"></i> Upload Picture
+                        </button>
+                    </div>
+                    <div class="profile-picture-box">
+                        <div id="backgroundPreview" class="profile-picture">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <input type="file" id="backgroundPicInput" accept="image/*" style="display:none;">
+                        <button class="btn-secondary" onclick="document.getElementById('backgroundPicInput').click()">
+                            <i class="fas fa-upload"></i> Upload Background
+                        </button>
+                    </div>
+                    <div class="profile-form">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" value="MD Abdullah AL Alif" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Title/Profession</label>
+                            <input type="text" id="profession" value="Web Developer & Creative Thinker" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Bio</label>
+                            <textarea id="bio" class="form-input" rows="4">I'm a passionate web developer with a focus on creating clean, modern, and user-friendly websites.</textarea>
+                        </div>
+                        <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Media Gallery Section -->
+            <section id="media" class="dashboard-section">
+                <h2>Media Gallery</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & drop files here or click to upload</p>
+                    <input type="file" id="mediaInput" multiple accept="image/*,video/*" style="display:none;">
+                </div>
+                <div class="media-grid" id="mediaGrid">
+                    <!-- Media items will be added here -->
+                </div>
+            </section>
+
+            <!-- Contact Info Section -->
+            <section id="contact-info" class="dashboard-section">
+                <h2>Contact Information</h2>
+                <div class="contact-form">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="contactEmail" value="almamunfire10@gmail.com" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" id="mobileNumber" value="+8801611979710" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Alternate Phone</label>
+                        <input type="tel" id="altPhone" placeholder="(Optional)" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="location" value="Mymenshingh, Haluaghat" class="form-input">
+                    </div>
+                    <button class="btn-primary" onclick="saveContactInfo()">Save Contact Info</button>
+                </div>
+            </section>
+
+            <!-- Bio & Skills Section -->
+            <section id="bio" class="dashboard-section">
+                <h2>Bio & Skills</h2>
+                <div class="form-group">
+                    <label>About You</label>
+                    <textarea id="aboutText" class="form-input" rows="5" placeholder="Enter your full bio..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Skills (comma separated)</label>
+                    <textarea id="skillsText" class="form-input" rows="3" placeholder="HTML5, CSS3, JavaScript, React, Node.js"></textarea>
+                </div>
+                <button class="btn-primary" onclick="saveBioSkills()">Save Bio & Skills</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
+                loadDashboardData();
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        });
+
+        // Section switching
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+                
+                this.classList.add('active');
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Profile picture upload
+        document.getElementById('profilePicInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('profilePreview');
+                    preview.innerHTML = `<img src="${event.target.result}" alt="Profile Picture">`;
+                    localStorage.setItem('profilePic', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Background picture upload
+        document.getElementById('backgroundPicInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('backgroundPreview');
+                    preview.innerHTML = `<img src="${event.target.result}" alt="Background Picture">`;
+                    localStorage.setItem('backgroundPic', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Media upload
+        const uploadArea = document.getElementById('uploadArea');
+        const mediaInput = document.getElementById('mediaInput');
+
+        uploadArea.addEventListener('click', () => mediaInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#2563eb';
+            uploadArea.style.backgroundColor = '#f0f7ff';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#e5e7eb';
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#e5e7eb';
+            uploadArea.style.backgroundColor = 'transparent';
+            handleMediaUpload(e.dataTransfer.files);
+        });
+
+        mediaInput.addEventListener('change', (e) => handleMediaUpload(e.target.files));
+
+        function handleMediaUpload(files) {
+            let mediaArray = JSON.parse(localStorage.getItem('mediaGallery')) || [];
+            
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const mediaItem = {
+                        id: Date.now() + Math.random(),
+                        src: event.target.result,
+                        type: file.type.startsWith('video') ? 'video' : 'image',
+                        name: file.name
+                    };
+                    mediaArray.push(mediaItem);
+                    localStorage.setItem('mediaGallery', JSON.stringify(mediaArray));
+                    displayMedia();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function displayMedia() {
+            const mediaGrid = document.getElementById('mediaGrid');
+            const mediaArray = JSON.parse(localStorage.getItem('mediaGallery')) || [];
+            
+            mediaGrid.innerHTML = mediaArray.map(item => `
+                <div class="media-item">
+                    ${item.type === 'video' ? 
+                        `<video width="100%" height="auto"><source src="${item.src}"></video>` :
+                        `<img src="${item.src}" alt="Media">`
+                    }
+                    <div class="media-actions">
+                        <a href="${item.src}" download="${item.name}" class="action-btn download-btn" title="Download">
+                            <i class="fas fa-download"></i>
+                        </a>
+                        <button class="action-btn delete-btn" onclick="deleteMedia(${item.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteMedia(id) {
+            if (confirm('Delete this media?')) {
+                let mediaArray = JSON.parse(localStorage.getItem('mediaGallery')) || [];
+                mediaArray = mediaArray.filter(item => item.id !== id);
+                localStorage.setItem('mediaGallery', JSON.stringify(mediaArray));
+                displayMedia();
+            }
+        }
+
+        function saveProfile() {
+            const profile = {
+                fullName: document.getElementById('fullName').value,
+                profession: document.getElementById('profession').value,
+                bio: document.getElementById('bio').value
+            };
+            localStorage.setItem('profileData', JSON.stringify(profile));
+            alert('Profile saved successfully!');
+        }
+
+        function saveContactInfo() {
+            const contact = {
+                email: document.getElementById('contactEmail').value,
+                mobile: document.getElementById('mobileNumber').value,
+                altPhone: document.getElementById('altPhone').value,
+                location: document.getElementById('location').value
+            };
+            localStorage.setItem('contactInfo', JSON.stringify(contact));
+            alert('Contact info saved successfully!');
+        }
+
+        function saveBioSkills() {
+            const data = {
+                about: document.getElementById('aboutText').value,
+                skills: document.getElementById('skillsText').value.split(',').map(s => s.trim())
+            };
+            localStorage.setItem('bioSkills', JSON.stringify(data));
+            alert('Bio & Skills saved successfully!');
+        }
+
+        function loadDashboardData() {
+            // Load profile data
+            const profileData = JSON.parse(localStorage.getItem('profileData'));
+            if (profileData) {
+                document.getElementById('fullName').value = profileData.fullName;
+                document.getElementById('profession').value = profileData.profession;
+                document.getElementById('bio').value = profileData.bio;
+            }
+
+            // Load contact info
+            const contactInfo = JSON.parse(localStorage.getItem('contactInfo'));
+            if (contactInfo) {
+                document.getElementById('contactEmail').value = contactInfo.email;
+                document.getElementById('mobileNumber').value = contactInfo.mobile;
+                document.getElementById('altPhone').value = contactInfo.altPhone;
+                document.getElementById('location').value = contactInfo.location;
+            }
+
+            // Load bio & skills
+            const bioSkills = JSON.parse(localStorage.getItem('bioSkills'));
+            if (bioSkills) {
+                document.getElementById('aboutText').value = bioSkills.about;
+                document.getElementById('skillsText').value = bioSkills.skills.join(', ');
+            }
+
+            // Load profile picture
+            const profilePic = localStorage.getItem('profilePic');
+            if (profilePic) {
+                document.getElementById('profilePreview').innerHTML = `<img src="${profilePic}" alt="Profile Picture">`;
+            }
+
+            // Load background picture
+            const backgroundPic = localStorage.getItem('backgroundPic');
+            if (backgroundPic) {
+                document.getElementById('backgroundPreview').innerHTML = `<img src="${backgroundPic}" alt="Background Picture">`;
+            }
+
+            // Load media gallery
+            displayMedia();
+        }
+    </script>
+</body>
+</html>

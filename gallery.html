@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Gallery - Alif Ahmed Alvi</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Alif Ahmed Alvi</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+                <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+                <li><a href="#gallery" class="nav-link active">Gallery</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Media Gallery Section -->
+    <section id="gallery" class="gallery-section">
+        <div class="container">
+            <h2 class="section-title">Media Gallery</h2>
+            <p class="gallery-subtitle">My Photos & Videos - Download and Share</p>
+            
+            <div class="gallery-info-box">
+                <i class="fas fa-info-circle"></i>
+                <p>All media can be freely downloaded and shared</p>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-images"></i> All Media
+                </button>
+                <button class="filter-btn" data-filter="image">
+                    <i class="fas fa-image"></i> Photos
+                </button>
+                <button class="filter-btn" data-filter="video">
+                    <i class="fas fa-video"></i> Videos
+                </button>
+            </div>
+
+            <div class="gallery-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalMedia">0</span>
+                    <span class="stat-label">Total Media</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalPhotos">0</span>
+                    <span class="stat-label">Photos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalVideos">0</span>
+                    <span class="stat-label">Videos</span>
+                </div>
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Gallery items will be loaded here -->
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-images"></i>
+                <p>No media uploaded yet.</p>
+                <p class="empty-state-hint">Admin: <a href="login.html">Login to Dashboard</a> to add photos and videos.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <button class="lightbox-prev" onclick="prevLightbox()">❮</button>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="Gallery">
+            <video id="lightboxVideo" controls></video>
+        </div>
+        <button class="lightbox-next" onclick="nextLightbox()">❯</button>
+        <a id="lightboxDownload" href="" download class="lightbox-download">
+            <i class="fas fa-download"></i> Download
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Alif Ahmed Alvi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        let currentIndex = 0;
+        let filteredMedia = [];
+        let allMedia = [];
+
+        window.addEventListener('load', function() {
+            loadGallery();
+            setupFilterButtons();
+            updateMediaStats();
+        });
+
+        function loadGallery() {
+            allMedia = JSON.parse(localStorage.getItem('mediaGallery')) || [];
+            const galleryGrid = document.getElementById('galleryGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (allMedia.length === 0) {
+                galleryGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                galleryGrid.style.display = 'grid';
+                emptyState.style.display = 'none';
+                displayFilteredGallery('all', allMedia);
+            }
+        }
+
+        function updateMediaStats() {
+            const total = allMedia.length;
+            const photos = allMedia.filter(m => m.type === 'image').length;
+            const videos = allMedia.filter(m => m.type === 'video').length;
+            
+            document.getElementById('totalMedia').textContent = total;
+            document.getElementById('totalPhotos').textContent = photos;
+            document.getElementById('totalVideos').textContent = videos;
+        }
+
+        function setupFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    displayFilteredGallery(this.getAttribute('data-filter'), allMedia);
+                });
+            });
+        }
+
+        function displayFilteredGallery(filter, mediaArray) {
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            if (filter === 'all') {
+                filteredMedia = mediaArray.slice().reverse();
+            } else {
+                filteredMedia = mediaArray.filter(item => item.type === filter).reverse();
+            }
+
+            if (filteredMedia.length === 0) {
+                galleryGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: #999;">No media in this category</p>';
+                return;
+            }
+
+            galleryGrid.innerHTML = filteredMedia.map((item, index) => `
+                <div class="gallery-item" onclick="openLightbox(${index})">
+                    <div class="gallery-item-wrapper">
+                        ${item.type === 'video' ? 
+                            `<div class="gallery-thumb">
+                                <video><source src="${item.src}"></video>
+                                <div class="video-icon"><i class="fas fa-play"></i></div>
+                                <div class="video-duration">Video</div>
+                            </div>` :
+                            `<img src="${item.src}" alt="Gallery" class="gallery-image">`
+                        }
+                        <div class="gallery-overlay">
+                            <div class="gallery-buttons">
+                                <button class="gallery-btn gallery-view-btn" onclick="event.stopPropagation(); openLightbox(${index})" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="gallery-btn gallery-download-btn" onclick="event.stopPropagation(); downloadMedia('${item.src}', '${item.name}')" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openLightbox(index) {
+            currentIndex = index;
+            const item = filteredMedia[index];
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            const lightboxVideo = document.getElementById('lightboxVideo');
+            const lightboxDownload = document.getElementById('lightboxDownload');
+
+            if (item.type === 'video') {
+                lightboxImg.style.display = 'none';
+                lightboxVideo.style.display = 'block';
+                lightboxVideo.src = item.src;
+            } else {
+                lightboxImg.style.display = 'block';
+                lightboxVideo.style.display = 'none';
+                lightboxImg.src = item.src;
+            }
+
+            lightboxDownload.href = item.src;
+            lightboxDownload.download = item.name || 'download';
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function nextLightbox() {
+            if (filteredMedia.length === 0) return;
+            currentIndex = (currentIndex + 1) % filteredMedia.length;
+            openLightbox(currentIndex);
+        }
+
+        function prevLightbox() {
+            if (filteredMedia.length === 0) return;
+            currentIndex = (currentIndex - 1 + filteredMedia.length) % filteredMedia.length;
+            openLightbox(currentIndex);
+        }
+
+        function downloadMedia(src, name) {
+            const link = document.createElement('a');
+            link.href = src;
+            link.download = name || 'media-download';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Close lightbox on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextLightbox();
+            if (e.key === 'ArrowLeft') prevLightbox();
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) closeLightbox();
+        });
+    </script>
+</body>
+</html>
